@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EMS Fellowship Alumni Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        
+        /* Custom Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+        }
+        .leaflet-popup-content {
+            margin: 15px;
+            line-height: 1.5;
+            min-width: 240px;
+        }
+        .fellow-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #005BBB; /* UPMC Blue */
+            padding-bottom: 3px;
+        }
+        .fellow-year {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .fellow-position {
+            font-size: 0.95em;
+            color: #34495e;
+            white-space: pre-line; /* Preserves new lines in titles */
+        }
+        .fellow-location {
+            font-size: 0.8em; 
+            margin-top: 10px; 
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+<script>
+    // Initialize the map centered on the US
+    var map = L.map('map').setView([39.8283, -98.5795], 4);
+
+    // Add a tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Create a marker cluster group to handle overlapping pins (especially Pittsburgh)
+    var markers = L.markerClusterGroup({
+        maxClusterRadius: 40, 
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true
+    });
+
+    // Data from "Prior EMS Fellows List (1).xlsx - Cleaned for Website.csv"
+    var fellows = [
+        {
+            "year": "1990-1991",
+            "name": "Eric Davis, MD",
+            "pos": "Professor, Emergency Medicine (ret)\nChief, Division of EMS (ret)",
+            "loc": "Rochester, NY",
+            "lat": 43.1566,
+            "lng": -77.6088
+        },
+        {
+            "year": "1992-1994",
+            "name": "Theodore Delbridge, MD, MPH",
+            "pos": "Executive Director, Maryland Institute for EMS Systems\nPast President, NAEMSP",
+            "loc": "Annapolis, MD",
+            "lat": 38.9784,
+            "lng": -76.4922
+        },
+        {
+            "year": "1994-1996",
+            "name": "Hector Alonso-Serra, MD, MPH",
+            "pos": "Chief of Emergency Department, Department of Veterans Affairs",
+            "loc": "Trujillo Alto, Puerto Rico",
+            "lat": 18.3547,
+            "lng": -66.0063
+        },
+        {
+            "year": "1995-1997",
+            "name": "Kathy Rinnert, MD, MPH",
+            "pos": "Professor of Emergency Medicine, UT Southwestern\nMedical Team Manager,  Texas Urban Search and Rescue team (TXTF-1)",
+            "loc": "Dallas, TX",
+            "lat": 32.7767,
+            "lng": -96.797
+        },
+        {
+            "year": "1996-1998",
+            "name": "Ritu Sahni, MD",
+            "pos": "Medical Director, Washington and Clackamas Counties, OR\nFormer President, NAEMSP",
+            "loc": "Portland, OR",
+            "lat": 45.5152,
+            "lng": -122.6784
+        },
+        {
+            "year": "1996-1998",
+            "name": "Owen Traynor, MD",
+            "pos": "EMS Medical Director, St. Clair Hospital",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "1997-1999",
+            "name": "Guillermo J. Pierluisi, MD, MPH",
+            "pos": "Vice President of Emergency Medicine Services, Flagler Hospital\nMedical Director of Emergency Care Center, Flagler Hospital\nColonel, U.S. Army National Guard\nState Surgeon of the Georgia Army National Guard [June, 2011]",
+            "loc": "St Augustine, FL",
+            "lat": 29.9012,
+            "lng": -81.3124
+        },
+        {
+            "year": "2000-2002",
+            "name": "TJ Doyle, MD, MPH",
+            "pos": "Medical Director, STAT-MD",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2000-2002",
+            "name": "Jay H. Reich, MD",
+            "pos": "Emergency & EMS Physician",
+            "loc": "Kansas City, MO",
+            "lat": 39.0997,
+            "lng": -94.5786
+        },
+        {
+            "year": "2001-2003",
+            "name": "George Kiss, MD",
+            "pos": "EMS and Tactical Physician, Harris County, TX",
+            "loc": "Houston, TX",
+            "lat": 29.7604,
+            "lng": -95.3698
+        },
+        {
+            "year": "2002-2004",
+            "name": "Jeff Lubin, MD, MPH",
+            "pos": "Professor and Vice Chair for Research, Penn State University",
+            "loc": "Hershey, PA",
+            "lat": 40.2859,
+            "lng": -76.6502
+        },
+        {
+            "year": "2004-2006",
+            "name": "Frank Guyette, MD, MPH, MS",
+            "pos": "Medical Director, STAT MedEvac, UPMC\nCo-PI, LITES Network\nERMI Endowed Chair in Healthcare Quality, University of Pittsburgh",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2005-2007",
+            "name": "William Northington, MD, MPH",
+            "pos": "EMS Physician, US Dept. of State",
+            "loc": "Athens, Greece",
+            "lat": 37.9838,
+            "lng": 23.7275
+        },
+        {
+            "year": "2005-2007",
+            "name": "William R. Dennis, MD, MPH",
+            "pos": "CMO, Advanced Correctional Healthcare",
+            "loc": "Franklin, TN",
+            "lat": 35.9251,
+            "lng": -86.8689
+        },
+        {
+            "year": "2007-2009",
+            "name": "Christopher Knutsen, MD, MPH",
+            "pos": "Chief, Division of EMS, SUNY Upstate Medical Center",
+            "loc": "Syracuse, NY",
+            "lat": 43.0481,
+            "lng": -76.1474
+        },
+        {
+            "year": "2008-2010",
+            "name": "Christian Martin-Gill, MD, MPH",
+            "pos": "Chief, Division of EMS, UPMC\nProgram Director, EMS Fellowship, UPMC",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2009-2011",
+            "name": "Adam Tobias, MD, MPH",
+            "pos": "Asst. Medical Director, Pittsburgh EMS\nMedical Director, Uniontown FD EMS",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2010-2012",
+            "name": "Micha Campbell, MD, MPH",
+            "pos": "Assoc. Medical Director, Ross/West-View EMS",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2012-2014",
+            "name": "Michael Hilton, MD, MPH",
+            "pos": "",
+            "loc": "New York City, NY",
+            "lat": 40.7128,
+            "lng": -74.006
+        },
+        {
+            "year": "2014-2015",
+            "name": "Jeremiah Escajeda, MD",
+            "pos": "Program Director, EMS Fellowship, MetroHealth",
+            "loc": "Cleveland, OH",
+            "lat": 41.4993,
+            "lng": -81.6944
+        },
+        {
+            "year": "2015-2016",
+            "name": "Lenny Weiss, MD",
+            "pos": "Medical Director, Pittsburgh Dept. of Public Safety",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2016-2017",
+            "name": "Michael Holtz, MD",
+            "pos": "Medical Director, Clark County Fire Department\nDirector of Disaster Management, University of Las Vegas",
+            "loc": "Las Vegas, NV",
+            "lat": 36.1699,
+            "lng": -115.1398
+        },
+        {
+            "year": "2016-2017",
+            "name": "Rickquel Tripp, MD, MPH",
+            "pos": "EMS Medical Director, UPMC\nVice Chair for Diversion, Equity, and Inclusion, UPMC GME",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2018-2019",
+            "name": "Dylan Morris, MD, MBA",
+            "pos": "Associate Medical Director, STAT MedEvac\nAssociate Fellowship Director, UPMC EMS Fellowship",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2018-2019",
+            "name": "Jeffrey Nusbaum, MD, MBA",
+            "pos": "Medical Director, Baltimore County Fire Department\n Associate Medical Director, Maryland ExpressCare Critical Care Transport",
+            "loc": "Baltimore, MD",
+            "lat": 39.2904,
+            "lng": -76.6122
+        },
+        {
+            "year": "2019-2020",
+            "name": "Reed Zach Louderback, MD",
+            "pos": "Medical Director, West Metro Fire Rescue",
+            "loc": "Lakewood, CO",
+            "lat": 39.7047,
+            "lng": -105.0814
+        },
+        {
+            "year": "2019-2020",
+            "name": "Timothy Satty, MD",
+            "pos": "Medical Director, University Hospital EMS\nChief, Division of EMS, Rutgers-New Jersey Medical School",
+            "loc": "Newark, NJ",
+            "lat": 40.7357,
+            "lng": -74.1724
+        },
+        {
+            "year": "2020-2021",
+            "name": "Seth Kelly, MD",
+            "pos": "Chief, Division of EMS, Baystate Health",
+            "loc": "Springfield, MA",
+            "lat": 42.1015,
+            "lng": -72.5898
+        },
+        {
+            "year": "2020-2021",
+            "name": "Jordan Singer, MD",
+            "pos": "EMS Medical Director, University Hospitals",
+            "loc": "Cleveland, OH",
+            "lat": 41.4993,
+            "lng": -81.6944
+        },
+        {
+            "year": "2021-2022",
+            "name": "Angelica Cercone, MD",
+            "pos": "EMS Medical Director, UPMC Children's Hospital of Pittsburgh",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2021-2022",
+            "name": "Nicholas Von Foerster, MD",
+            "pos": "EMS Medical Director, Reno Fire Department",
+            "loc": "Reno, NV",
+            "lat": 39.5296,
+            "lng": -119.8138
+        },
+        {
+            "year": "2021-2022",
+            "name": "Philip Walker, MD",
+            "pos": "Emegency Physician, Providence St. Vincent",
+            "loc": "Portland, OR",
+            "lat": 45.5152,
+            "lng": -122.6784
+        },
+        {
+            "year": "2022-2023",
+            "name": "Keith Alangaden, MD",
+            "pos": "Associate Residency Director, Wayne State University / Detroit Receiving Hospital",
+            "loc": "Detroit, MI",
+            "lat": 42.3314,
+            "lng": -83.0458
+        },
+        {
+            "year": "2022-2023",
+            "name": "Nicholas George, MD",
+            "pos": "Critical Care Retreival Flight Physician",
+            "loc": "New South Wales, Australia",
+            "lat": -31.8402,
+            "lng": 145.6128
+        },
+        {
+            "year": "2023-2024",
+            "name": "Jake Cihla, MD",
+            "pos": "EMS Medical Director, Aurora Health",
+            "loc": "Grafton, WI",
+            "lat": 43.3194,
+            "lng": -87.9506
+        },
+        {
+            "year": "2023-2024",
+            "name": "Alek Keller, MD",
+            "pos": "EMS Medical Director, UPMC",
+            "loc": "Pittsburgh, PA",
+            "lat": 40.4406,
+            "lng": -79.9959
+        },
+        {
+            "year": "2024-2025",
+            "name": "Jonathan McMahon, DO",
+            "pos": "EMS Physician, Yale Health",
+            "loc": "New Haven, CT",
+            "lat": 41.3083,
+            "lng": -72.9279
+        },
+        {
+            "year": "2024-2025",
+            "name": "Benjamin Williams, DO",
+            "pos": "EMS Physician, Virginia Commonweath University",
+            "loc": "Richmond, VA",
+            "lat": 37.5407,
+            "lng": -77.436
+        }
+    ];
+
+    // Loop through data and create markers
+    fellows.forEach(function(person) {
+        if (person.lat && person.lng) {
+            var marker = L.marker([person.lat, person.lng]);
+            
+            var popupContent = `
+                <div class="fellow-name">${person.name}</div>
+                <div class="fellow-year">Class of ${person.year}</div>
+                <div class="fellow-position">${person.pos}</div>
+                <div class="fellow-location">📍 ${person.loc}</div>
+            `;
+            
+            marker.bindPopup(popupContent);
+            markers.addLayer(marker);
+        }
+    });
+
+    // Add the cluster group to the map
+    map.addLayer(markers);
+
+</script>
+
+</body>
+</html>
